@@ -67,29 +67,15 @@ linters: # Список активных и отключённых линтер�
     # Логирование
     - sloglint # Проверки для slog (структурированное логирование)
 
-  # disable: # Линтеры, которые намеренно отключены
-  #   - gocyclo       # Старый линтер сложности (заменён на cyclop)
-  #   - lll           # Проверка длины строк (заменён на golines formatter)
-  #   - contextcheck  # Много false positives
-  #   - err113        # Слишком строгий
-  #   - varnamelen    # Много false positives
-  #   - nlreturn      # Спорное форматирование
-  #   - wsl           # Deprecated (заменён на wsl_v5)
-  #   - wrapcheck     # Излишне строгий для образовательного кода
-  disable:
-    - gocyclo
-    - lll
-    - contextcheck
-    - err113
-    - varnamelen
-    - nlreturn
-    - wsl
-    - wrapcheck
-    - gocritic
-    - godot
-    - godox
-    - gosec
-    - noctx
+  disable: # Линтеры, которые намеренно отключены
+    - gocyclo # Старый линтер сложности (заменён на cyclop)
+    - lll # Проверка длины строк (заменён на golines formatter)
+    - contextcheck # Много false positives
+    - err113 # Слишком строгий
+    - varnamelen # Много false positives
+    - nlreturn # Спорное форматирование
+    - wsl # Deprecated (заменён на wsl_v5)
+    - wrapcheck # Излишне строгий для образовательного кода
 
   exclusions: # Исключения из анализа
     generated: strict # Игнорировать сгенерированные файлы (по "// Code generated ... DO NOT EDIT.")

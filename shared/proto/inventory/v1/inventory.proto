@@ -11,8 +11,8 @@ import "google/protobuf/timestamp.proto";
 service InventoryService {
   // GetPart возвращает деталь по UUID
   rpc GetPart(GetPartRequest) returns (GetPartResponse);
-  rpc ListParts(ListPartsRequest) returns (ListPartsResponse);
   // TODO: Добавить метод ListParts
+  rpc ListParts(ListPartsRequest) returns (ListPartsResponse);
 }
 
 // Тип детали
