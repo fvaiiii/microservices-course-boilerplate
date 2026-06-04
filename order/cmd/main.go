@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 
-	orderHandler "github.com/fvaiiii/microservices-course-boilerplate/order/pkg/handler"
+	"github.com/fvaiiii/microservices-course-boilerplate/order/pkg/app"
 	inventoryv1 "github.com/fvaiiii/microservices-course-boilerplate/shared/pkg/proto/inventory/v1"
 	paymentv1 "github.com/fvaiiii/microservices-course-boilerplate/shared/pkg/proto/payment/v1"
 )
@@ -63,31 +63,18 @@ func main() {
 		}
 		os.Exit(1)
 	}
+	inventoryClient := inventoryv1.NewInventoryServiceClient(inventoryConn)
+	paymentClient := paymentv1.NewPaymentServiceClient(paymentConn)
 
-	store := orderHandler.NewOrderStore()
-	h := orderHandler.NewOrderHandler(
-		inventoryv1.NewInventoryServiceClient(inventoryConn),
-		paymentv1.NewPaymentServiceClient(paymentConn),
-		store,
-	)
-
-	orderServer, err := orderHandler.SetupServer(h)
+	handler, err := app.NewHTTPHandler(inventoryClient, paymentClient)
 	if err != nil {
-		slog.Error("ошибка создания сервера OpenAPI", "error", err)
-
-		if closeErr := inventoryConn.Close(); closeErr != nil {
-			slog.Error("ошибка закрытия inventoryConn", "error", closeErr)
-		}
-		if closeErr := paymentConn.Close(); closeErr != nil {
-			slog.Error("ошибка закрытия paymentConn", "error", closeErr)
-		}
-
+		slog.Error("ошибка создания хендлера", "error", err)
 		os.Exit(1)
 	}
 
 	server := &http.Server{
 		Addr:              httpAddress,
-		Handler:           orderServer,
+		Handler:           handler,
 		ReadHeaderTimeout: httpReadHeaderTimeout,
 		ReadTimeout:       httpReadTimeout,
 		WriteTimeout:      httpWriteTimeout,

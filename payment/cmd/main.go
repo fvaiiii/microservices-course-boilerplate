@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
-	svc "github.com/fvaiiii/microservices-course-boilerplate/payment/pkg/service"
-	paymentv1 "github.com/fvaiiii/microservices-course-boilerplate/shared/pkg/proto/payment/v1"
+	"github.com/fvaiiii/microservices-course-boilerplate/payment/internal/interceptor"
+	"github.com/fvaiiii/microservices-course-boilerplate/payment/pkg/app"
 )
 
 const (
@@ -37,20 +37,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	grpcServer := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     grpcMaxConnectionIdle,
-		MaxConnectionAge:      grpcMaxConnectionAge,
-		MaxConnectionAgeGrace: grpcMaxConnectionAgeGrace,
-		Time:                  grpcKeepaliveTime,
-		Timeout:               grpcKeepaliveTimeout,
-	}),
+	grpcServer := grpc.NewServer(
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     grpcMaxConnectionIdle,
+			MaxConnectionAge:      grpcMaxConnectionAge,
+			MaxConnectionAgeGrace: grpcMaxConnectionAgeGrace,
+			Time:                  grpcKeepaliveTime,
+			Timeout:               grpcKeepaliveTimeout,
+		}),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             grpcMinPingInterval,
 			PermitWithoutStream: true,
 		}),
+		grpc.UnaryInterceptor(interceptor.ErrorInterceptor),
 	)
 
-	paymentv1.RegisterPaymentServiceServer(grpcServer, &svc.PaymentServer{})
+	app.RegisterServices(grpcServer)
 
 	reflection.Register(grpcServer)
 

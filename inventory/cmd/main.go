@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
-	svc "github.com/fvaiiii/microservices-course-boilerplate/inventory/pkg/service"
-	inventoryv1 "github.com/fvaiiii/microservices-course-boilerplate/shared/pkg/proto/inventory/v1"
+	"github.com/fvaiiii/microservices-course-boilerplate/inventory/internal/interceptor"
+	"github.com/fvaiiii/microservices-course-boilerplate/inventory/pkg/app"
 )
 
 const (
@@ -37,19 +37,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	grpcServer := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     grpcMaxConnectionIdle,
-		MaxConnectionAge:      grpcMaxConnectionAge,
-		MaxConnectionAgeGrace: grpcMaxConnectionAgeGrace,
-		Time:                  grpcKeepaliveTime,
-		Timeout:               grpcKeepaliveTimeout,
-	}),
+	grpcServer := grpc.NewServer(
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     grpcMaxConnectionIdle,
+			MaxConnectionAge:      grpcMaxConnectionAge,
+			MaxConnectionAgeGrace: grpcMaxConnectionAgeGrace,
+			Time:                  grpcKeepaliveTime,
+			Timeout:               grpcKeepaliveTimeout,
+		}),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             grpcMinPingInterval,
 			PermitWithoutStream: true,
 		}),
+		grpc.UnaryInterceptor(interceptor.ErrorInterceptor),
 	)
-	inventoryv1.RegisterInventoryServiceServer(grpcServer, svc.NewInventoryServer())
+
+	app.RegisterServices(grpcServer)
 
 	reflection.Register(grpcServer)
 
