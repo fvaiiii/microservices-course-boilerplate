@@ -8,23 +8,23 @@ template: testify
 formatter: goimports
 
 # Директория для сгенерированных моков (рядом с интерфейсом в подпапке mocks).
-dir: "{{.InterfaceDir}}/mocks"
+dir: '{{.InterfaceDir}}/mocks'
 
 # Имя файла мока (snake_case через функцию snakecase).
-filename: "mock_{{ .InterfaceName | snakecase }}.go"
+filename: 'mock_{{ .InterfaceName | snakecase }}.go'
 
 # Имя пакета моков.
-pkgname: "mocks"
+pkgname: 'mocks'
 
 # Имя структуры мока (совпадает с именем интерфейса).
-structname: "{{.InterfaceName}}"
+structname: '{{.InterfaceName}}'
 
 # Принудительная перезапись существующих файлов.
 force-file-write: true
 
 # Boilerplate текст (лицензия, заголовок).
 template-data:
-  boilerplate-file: ".mockery_boilerplate_text.txt"
+  boilerplate-file: '.mockery_boilerplate_text.txt'
 
 packages:
   # TODO: Поменяй prefix github.com/student на свой модуль
@@ -32,20 +32,20 @@ packages:
   # Order service
   github.com/fvaiiii/microservices-course-boilerplate/order/internal/api/order/v1:
     config:
-      include-interface-regex: ".*Service"
+      include-interface-regex: '.*Service'
   github.com/fvaiiii/microservices-course-boilerplate/order/internal/service/order:
     config:
-      include-interface-regex: ".*(Repository|Client)"
+      include-interface-regex: '.*(Repository|Client)'
 
   # Inventory service
-  github.com/fvaiiii/microservices-course-boilerplate/internal/api/inventory/v1:
+  github.com/fvaiiii/microservices-course-boilerplate/inventory/internal/api/inventory/v1:
     config:
-      include-interface-regex: ".*Service"
+      include-interface-regex: '.*Service'
   github.com/fvaiiii/microservices-course-boilerplate/inventory/internal/service/part:
     config:
-      include-interface-regex: ".*Repository"
+      include-interface-regex: '.*Repository'
 
   # Payment service
   github.com/fvaiiii/microservices-course-boilerplate/payment/internal/api/payment/v1:
     config:
-      include-interface-regex: ".*Service"
+      include-interface-regex: '.*Service'
