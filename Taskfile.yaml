@@ -238,3 +238,8 @@ tasks:
     desc: 'Запускает API-тесты'
     cmds:
       - go test -v ./order/tests/...
+
+  build:
+    desc: 'Собирает все Go-модули (go build)'
+    cmds:
+      - go build ./order/... ./inventory/... ./payment/...
