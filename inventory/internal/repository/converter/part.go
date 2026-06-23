@@ -10,8 +10,8 @@ func PartToModel(part record.Part) model.Part {
 		UUID:          part.UUID,
 		Name:          part.Name,
 		Description:   part.Description,
-		Price:         part.Price,
 		PartType:      model.PartType(part.PartType),
+		Price:         part.Price,
 		StockQuantity: part.StockQuantity,
 		CreatedAt:     part.CreatedAt,
 	}
