@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"github.com/google/uuid"
+
 	"github.com/fvaiiii/microservices-course-boilerplate/order/internal/model"
 	"github.com/fvaiiii/microservices-course-boilerplate/order/internal/repository/record"
 )
@@ -8,34 +10,34 @@ import (
 func OrderToRecord(order model.Order) record.Order {
 	return record.Order{
 		UUID:            order.UUID,
-		Items:           OrderItemsToRecord(order.Items),
-		TransactionUUID: order.TransactionUUID,
-		PaymentMethod:   (*string)(order.PaymentMethod),
 		Status:          string(order.Status),
+		TransactionUUID: order.TransactionUUID,
+		PaymentMethod:   paymentMethodToRecord(order.PaymentMethod),
 		CreatedAt:       order.CreatedAt,
 	}
 }
 
-func OrderItemsToRecord(orderItems []model.OrderItem) []record.OrderItem {
+func OrderItemsToRecord(orderUUID uuid.UUID, orderItems []model.OrderItem) []record.OrderItem {
 	items := make([]record.OrderItem, 0, len(orderItems))
 
 	for _, item := range orderItems {
 		items = append(items, record.OrderItem{
-			PartUUID: item.PartUUID,
-			PartType: string(item.PartType),
-			Price:    item.Price,
+			OrderUUID: orderUUID,
+			PartUUID:  item.PartUUID,
+			PartType:  string(item.PartType),
+			Price:     item.Price,
 		})
 	}
 	return items
 }
 
-func RecordToModel(order record.Order) model.Order {
+func RecordToModel(order record.Order, items []record.OrderItem) model.Order {
 	return model.Order{
 		UUID:            order.UUID,
-		Items:           OrderItemsToModel(order.Items),
-		TransactionUUID: order.TransactionUUID,
-		PaymentMethod:   (*model.PaymentMethod)(order.PaymentMethod),
+		Items:           OrderItemsToModel(items),
 		Status:          model.OrderStatus(order.Status),
+		TransactionUUID: order.TransactionUUID,
+		PaymentMethod:   paymentMethodToModel(order.PaymentMethod),
 		CreatedAt:       order.CreatedAt,
 	}
 }
@@ -51,4 +53,20 @@ func OrderItemsToModel(orderItems []record.OrderItem) []model.OrderItem {
 		})
 	}
 	return items
+}
+
+func paymentMethodToRecord(method *model.PaymentMethod) *string {
+	if method == nil {
+		return nil
+	}
+	s := string(*method)
+	return &s
+}
+
+func paymentMethodToModel(method *string) *model.PaymentMethod {
+	if method == nil {
+		return nil
+	}
+	m := model.PaymentMethod(*method)
+	return &m
 }

@@ -9,6 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
@@ -29,12 +32,31 @@ const (
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	dbURI := os.Getenv("DB_URI")
+	pool, err := pgxpool.New(ctx, dbURI)
+	if err != nil {
+		exitWithError(cancel, "создание пула соединений", err)
+	}
+	defer pool.Close()
+
+	err = pool.Ping(ctx)
+	if err != nil {
+		exitWithError(cancel, "проверка соединений с БД", err)
+	}
+	slog.Info("подключение к PostgreSQL установлено")
+
+	txManager, err := manager.New(trmpgx.NewDefaultFactory(pool))
+	if err != nil {
+		exitWithError(cancel, "создание transaction manager", err)
+	}
+
 	var lc net.ListenConfig
 	lis, err := lc.Listen(ctx, "tcp", grpcAddress)
 	if err != nil {
-		slog.Error("не удалось создать listener", "error", err)
-		os.Exit(1)
+		exitWithError(cancel, "не удалось создать listener", err)
 	}
 
 	grpcServer := grpc.NewServer(
@@ -52,7 +74,7 @@ func main() {
 		grpc.UnaryInterceptor(interceptor.ErrorInterceptor),
 	)
 
-	app.RegisterServices(grpcServer)
+	app.RegisterServices(grpcServer, pool, txManager)
 
 	reflection.Register(grpcServer)
 
@@ -70,4 +92,10 @@ func main() {
 	slog.Info("остановка gRPC сервера")
 	grpcServer.GracefulStop()
 	slog.Info("сервер остановлен")
+}
+
+func exitWithError(cancel context.CancelFunc, msg string, err error) {
+	slog.Error(msg, "error", err)
+	cancel()
+	os.Exit(1)
 }

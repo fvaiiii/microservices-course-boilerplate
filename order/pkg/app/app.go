@@ -3,6 +3,8 @@ package app
 import (
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	orderapi "github.com/fvaiiii/microservices-course-boilerplate/order/internal/api/order/v1"
 	inventoryclient "github.com/fvaiiii/microservices-course-boilerplate/order/internal/client/grpc/inventory/v1"
 	paymentclient "github.com/fvaiiii/microservices-course-boilerplate/order/internal/client/grpc/payment/v1"
@@ -14,13 +16,15 @@ import (
 )
 
 func NewHTTPHandler(
+	pool *pgxpool.Pool,
+	txManager orderrepo.TxManager,
 	inventoryClient inventoryv1.InventoryServiceClient,
 	paymentClient paymentv1.PaymentServiceClient,
 ) (http.Handler, error) {
 	inventoryRepo := inventoryclient.New(inventoryClient)
 	paymentRepo := paymentclient.New(paymentClient)
 
-	orderRepo := orderrepo.New()
+	orderRepo := orderrepo.New(pool, txManager)
 	orderService := ordersvc.New(orderRepo, inventoryRepo, paymentRepo)
 	api := orderapi.New(orderService)
 
